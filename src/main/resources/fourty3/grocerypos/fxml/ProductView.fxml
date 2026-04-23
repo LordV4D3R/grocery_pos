@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="fourty3.grocerypos.controller.ProductController"
+            styleClass="content-root">
+
+    <top>
+        <VBox spacing="10" styleClass="panel">
+            <padding>
+                <Insets top="15" right="15" bottom="15" left="15"/>
+            </padding>
+
+            <Label text="Quản lý sản phẩm" styleClass="section-title"/>
+
+            <HBox spacing="10">
+                <TextField fx:id="txtName" promptText="Tên sản phẩm"/>
+                <TextField fx:id="txtSellingPrice" promptText="Giá bán (vd: 2000000 hoặc 2,000,000)"/>
+                <TextField fx:id="txtImportPrice" promptText="Giá nhập (vd: 2000000 hoặc 2.000.000)"/>
+                <TextField fx:id="txtStockQuantity" promptText="Số lượng tồn"/>
+            </HBox>
+
+            <HBox spacing="10">
+                <Button text="Thêm" onAction="#handleAddProduct"/>
+                <Button text="Sửa" onAction="#handleUpdateProduct"/>
+                <Button text="Xoá / Ngừng bán" onAction="#handleDeleteProduct"/>
+                <Button text="Mở bán lại" onAction="#handleReactivateProduct"/>
+                <Button text="Làm mới" onAction="#handleRefresh"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="10" styleClass="panel">
+            <padding>
+                <Insets top="15" right="15" bottom="15" left="15"/>
+            </padding>
+
+            <HBox spacing="10">
+                <TextField fx:id="txtSearch" promptText="Tìm theo tên sản phẩm..." prefWidth="250"/>
+                <Button text="Tìm kiếm" onAction="#handleSearch"/>
+            </HBox>
+
+            <TableView fx:id="productTable" prefHeight="500">
+                <columns>
+                    <TableColumn fx:id="colRowNumber" text="Thứ tự" prefWidth="70" sortable="false"/>
+                    <TableColumn fx:id="colProductCode" text="Mã SP" prefWidth="90" sortable="false"/>
+                    <TableColumn fx:id="colName" text="Tên sản phẩm" prefWidth="210"/>
+                    <TableColumn fx:id="colSellingPrice" text="Giá bán" prefWidth="120"/>
+                    <TableColumn fx:id="colImportPrice" text="Giá nhập" prefWidth="120"/>
+                    <TableColumn fx:id="colStockQuantity" text="Tồn kho" prefWidth="90"/>
+                    <TableColumn fx:id="colStatus" text="Trạng thái" prefWidth="110"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+</BorderPane>

@@ -1,0 +1,58 @@
+/* Đổi font chữ sang font hiện đại hơn */
+.root {
+    -fx-font-family: "Segoe UI", "Open Sans", sans-serif;
+    -fx-background-color: #f8f9fa; /* Màu nền xám nhạt hiện đại */
+}
+
+/* Style cho các Panel (Khung chứa) */
+.panel {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8px; /* Bo góc mượt mà */
+    -fx-border-color: transparent;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 3); /* Đổ bóng nhẹ */
+}
+
+/* Style cho Menu bên trái */
+.side-menu {
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 2, 0);
+}
+
+/* Style chung cho tất cả các Button */
+.button {
+    -fx-background-color: #f1f3f5;
+    -fx-text-fill: #333333;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand; /* Đổi trỏ chuột khi hover */
+}
+
+/* Hiệu ứng khi di chuột vào Button (Hover) */
+.button:hover {
+    -fx-background-color: #e9ecef;
+}
+
+/* Style riêng cho nút Thanh Toán (Primary Button) */
+.checkout-button {
+    -fx-background-color: #0d6efd; /* Màu xanh web chuẩn (Bootstrap) */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.checkout-button:hover {
+    -fx-background-color: #0b5ed7;
+}
+
+/* Style cho TextField (Ô nhập liệu) */
+.text-field {
+    -fx-background-radius: 4px;
+    -fx-border-color: #ced4da;
+    -fx-border-radius: 4px;
+    -fx-padding: 6px;
+}
+
+.text-field:focused {
+    -fx-border-color: #86b7fe; /* Đổi màu viền khi click vào */
+    -fx-background-color: #ffffff;
+}

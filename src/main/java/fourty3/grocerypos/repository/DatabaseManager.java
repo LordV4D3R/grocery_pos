@@ -47,7 +47,10 @@ public class DatabaseManager {
                 CREATE TABLE IF NOT EXISTS sale_orders (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     created_at TEXT NOT NULL,
-                    total_amount REAL NOT NULL
+                    customer_id INTEGER,
+                    total_amount REAL NOT NULL,
+                    paid_amount REAL,
+                    payment_status TEXT
                 );
                 """;
 
@@ -106,6 +109,11 @@ public class DatabaseManager {
             backfillProductCodes(connection);
             ensureProductCodeUniqueIndex(connection);
 
+            ensureSaleOrderCustomerIdColumnExists(connection);
+            ensureSaleOrderPaidAmountColumnExists(connection);
+            backfillSaleOrderPaidAmount(connection);
+            ensureSaleOrderPaymentStatusColumnExists(connection);
+            backfillSaleOrderPaymentStatus(connection);
         } catch (SQLException e) {
             throw new RuntimeException("Cannot initialize database", e);
         }
@@ -252,14 +260,114 @@ public class DatabaseManager {
 
     private static void ensureCustomerCodeUniqueIndex(Connection connection) {
         String sql = """
-            CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_customer_code
-            ON customers(customer_code)
-            """;
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_customer_code
+                ON customers(customer_code)
+                """;
 
         try (Statement statement = connection.createStatement()) {
             statement.execute(sql);
         } catch (SQLException e) {
             throw new RuntimeException("Cannot create unique index for customers.customer_code", e);
+        }
+    }
+
+    private static void ensureSaleOrderCustomerIdColumnExists(Connection connection) {
+        String checkSql = "PRAGMA table_info(sale_orders)";
+        boolean hasCustomerIdColumn = false;
+
+        try (Statement statement = connection.createStatement();
+             var rs = statement.executeQuery(checkSql)) {
+
+            while (rs.next()) {
+                String columnName = rs.getString("name");
+                if ("customer_id".equalsIgnoreCase(columnName)) {
+                    hasCustomerIdColumn = true;
+                    break;
+                }
+            }
+
+            if (!hasCustomerIdColumn) {
+                statement.execute("ALTER TABLE sale_orders ADD COLUMN customer_id INTEGER");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Cannot migrate sale_orders.customer_id column", e);
+        }
+    }
+
+    private static void ensureSaleOrderPaidAmountColumnExists(Connection connection) {
+        String checkSql = "PRAGMA table_info(sale_orders)";
+        boolean hasPaidAmountColumn = false;
+
+        try (Statement statement = connection.createStatement();
+             var rs = statement.executeQuery(checkSql)) {
+
+            while (rs.next()) {
+                String columnName = rs.getString("name");
+                if ("paid_amount".equalsIgnoreCase(columnName)) {
+                    hasPaidAmountColumn = true;
+                    break;
+                }
+            }
+
+            if (!hasPaidAmountColumn) {
+                statement.execute("ALTER TABLE sale_orders ADD COLUMN paid_amount REAL");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Cannot migrate sale_orders.paid_amount column", e);
+        }
+    }
+
+    private static void backfillSaleOrderPaidAmount(Connection connection) {
+        String sql = """
+            UPDATE sale_orders
+            SET paid_amount = total_amount
+            WHERE paid_amount IS NULL
+            """;
+
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException("Cannot backfill sale_orders.paid_amount", e);
+        }
+    }
+
+    private static void ensureSaleOrderPaymentStatusColumnExists(Connection connection) {
+        String checkSql = "PRAGMA table_info(sale_orders)";
+        boolean hasPaymentStatusColumn = false;
+
+        try (Statement statement = connection.createStatement();
+             var rs = statement.executeQuery(checkSql)) {
+
+            while (rs.next()) {
+                String columnName = rs.getString("name");
+                if ("payment_status".equalsIgnoreCase(columnName)) {
+                    hasPaymentStatusColumn = true;
+                    break;
+                }
+            }
+
+            if (!hasPaymentStatusColumn) {
+                statement.execute("ALTER TABLE sale_orders ADD COLUMN payment_status TEXT");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Cannot migrate sale_orders.payment_status column", e);
+        }
+    }
+
+    private static void backfillSaleOrderPaymentStatus(Connection connection) {
+        String sql = """
+            UPDATE sale_orders
+            SET payment_status = 'PAID'
+            WHERE payment_status IS NULL OR trim(payment_status) = ''
+            """;
+
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException("Cannot backfill sale_orders.payment_status", e);
         }
     }
 }

@@ -30,6 +30,11 @@ public class MainLayoutController {
     }
 
     @FXML
+    private void showCustomerView() {
+        rootPane.setCenter(SceneManager.loadView("/fourty3/grocerypos/fxml/CustomerView.fxml"));
+    }
+
+    @FXML
     private void showReportView() {
         rootPane.setCenter(SceneManager.loadView("/fourty3/grocerypos/fxml/ReportView.fxml"));
     }

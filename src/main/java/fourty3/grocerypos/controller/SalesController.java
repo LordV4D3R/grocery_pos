@@ -1,10 +1,13 @@
 package fourty3.grocerypos.controller;
 
 import fourty3.grocerypos.model.CartRow;
+import fourty3.grocerypos.model.Customer;
 import fourty3.grocerypos.model.Product;
+import fourty3.grocerypos.service.CustomerService;
 import fourty3.grocerypos.service.ProductService;
 import fourty3.grocerypos.service.SalesService;
 import fourty3.grocerypos.util.CurrencyUtils;
+import fourty3.grocerypos.util.MoneyInputUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -16,6 +19,8 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 public class SalesController {
+
+    private static final double EPSILON = 0.0001;
 
     @FXML
     private TextField txtSearch;
@@ -53,20 +58,38 @@ public class SalesController {
     @FXML
     private Label lblTotalAmount;
 
+    @FXML
+    private ComboBox<Customer> cbCustomer;
+
+    @FXML
+    private TextField txtPaidAmount;
+
+    @FXML
+    private Label lblRemainingAmount;
+
+    @FXML
+    private Label lblPaymentStatus;
+
     private final ProductService productService = new ProductService();
+    private final CustomerService customerService = new CustomerService();
     private final SalesService salesService = new SalesService();
 
     private final ObservableList<Product> productList = FXCollections.observableArrayList();
     private final ObservableList<CartRow> cartItems = FXCollections.observableArrayList();
+    private final ObservableList<Customer> customerList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
         setupQuantityField();
+        setupPaidAmountField();
         setupSearchRealtime();
         setupProductList();
+        setupCustomerBox();
         setupCartTable();
         loadProducts();
+        loadCustomers();
         clearSelectedProductInfo();
+        updatePaymentSummary();
     }
 
     private void setupQuantityField() {
@@ -76,6 +99,11 @@ public class SalesController {
         };
 
         txtQuantity.setTextFormatter(new TextFormatter<>(new IntegerStringConverter(), null, filter));
+    }
+
+    private void setupPaidAmountField() {
+        MoneyInputUtils.installMoneyFormatter(txtPaidAmount);
+        txtPaidAmount.textProperty().addListener((obs, oldValue, newValue) -> updatePaymentSummary());
     }
 
     private void setupSearchRealtime() {
@@ -113,6 +141,29 @@ public class SalesController {
         });
     }
 
+    private void setupCustomerBox() {
+        cbCustomer.setItems(customerList);
+        cbCustomer.setButtonCell(createCustomerCell());
+        cbCustomer.setCellFactory(listView -> createCustomerCell());
+        cbCustomer.valueProperty().addListener((obs, oldValue, newValue) -> updatePaymentSummary());
+    }
+
+    private ListCell<Customer> createCustomerCell() {
+        return new ListCell<>() {
+            @Override
+            protected void updateItem(Customer item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    String code = item.getCustomerCode() == null ? "" : item.getCustomerCode();
+                    setText(code + " - " + item.getName() + " - " + item.getPhone());
+                }
+            }
+        };
+    }
+
     private void setupCartTable() {
         colProductName.setCellValueFactory(cellData -> cellData.getValue().productNameProperty());
         colQuantity.setCellValueFactory(cellData -> cellData.getValue().quantityProperty().asObject());
@@ -128,6 +179,15 @@ public class SalesController {
     private void loadProducts() {
         productList.setAll(productService.getActiveProducts());
         lvProducts.setItems(productList);
+    }
+
+    private void loadCustomers() {
+        customerList.setAll(
+                customerService.getAllCustomers()
+                        .stream()
+                        .filter(Customer::isActive)
+                        .toList()
+        );
     }
 
     @FXML
@@ -197,6 +257,11 @@ public class SalesController {
     }
 
     @FXML
+    private void handleClearCustomerSelection() {
+        cbCustomer.getSelectionModel().clearSelection();
+    }
+
+    @FXML
     private void handleCheckout() {
         if (cartItems.isEmpty()) {
             showWarning("Chưa có sản phẩm trong đơn.");
@@ -204,14 +269,29 @@ public class SalesController {
         }
 
         try {
-            String totalText = lblTotalAmount.getText();
+            double totalAmount = calculateCartTotal();
+            double paidAmount = parsePaidAmount(totalAmount);
 
-            salesService.checkout(new ArrayList<>(cartItems));
+            validateCheckout(totalAmount, paidAmount);
+
+            String paymentStatus = determinePaymentStatus(totalAmount, paidAmount);
+            Customer selectedCustomer = cbCustomer.getValue();
+            Integer customerId = selectedCustomer == null ? null : selectedCustomer.getId();
+            String customerText = selectedCustomer == null ? "Khách lẻ" : selectedCustomer.getName();
+            double remainingAmount = Math.max(0, totalAmount - paidAmount);
+
+            salesService.checkout(new ArrayList<>(cartItems), customerId, paidAmount, paymentStatus);
 
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Thanh toán");
             alert.setHeaderText("Thanh toán thành công");
-            alert.setContentText("Tổng tiền: " + totalText);
+            alert.setContentText(
+                    "Khách hàng: " + customerText
+                            + "\nTổng tiền: " + CurrencyUtils.formatVnd(totalAmount)
+                            + "\nĐã trả: " + CurrencyUtils.formatVnd(paidAmount)
+                            + "\nCòn nợ: " + CurrencyUtils.formatVnd(remainingAmount)
+                            + "\nTrạng thái: " + toPaymentStatusLabel(paymentStatus)
+            );
             alert.showAndWait();
 
             Integer selectedProductId = null;
@@ -221,8 +301,10 @@ public class SalesController {
             }
 
             cartItems.clear();
-            updateTotalAmount();
             txtQuantity.clear();
+            txtPaidAmount.clear();
+            cbCustomer.getSelectionModel().clearSelection();
+            updateTotalAmount();
             loadProducts();
 
             if (selectedProductId != null) {
@@ -237,6 +319,40 @@ public class SalesController {
         } catch (Exception e) {
             showWarning(e.getMessage());
         }
+    }
+
+    private void validateCheckout(double totalAmount, double paidAmount) {
+        if (paidAmount < 0) {
+            throw new IllegalArgumentException("Số tiền khách trả không hợp lệ.");
+        }
+
+        if (paidAmount > totalAmount + EPSILON) {
+            throw new IllegalArgumentException("Số tiền khách trả không được lớn hơn tổng tiền.");
+        }
+
+        if (paidAmount + EPSILON < totalAmount && cbCustomer.getValue() == null) {
+            throw new IllegalArgumentException("Đơn chưa thanh toán đủ phải chọn khách hàng.");
+        }
+    }
+
+    private String determinePaymentStatus(double totalAmount, double paidAmount) {
+        if (paidAmount <= EPSILON) {
+            return "UNPAID";
+        }
+
+        if (paidAmount + EPSILON < totalAmount) {
+            return "PARTIAL";
+        }
+
+        return "PAID";
+    }
+
+    private String toPaymentStatusLabel(String paymentStatus) {
+        return switch (paymentStatus) {
+            case "UNPAID" -> "Chưa thanh toán";
+            case "PARTIAL" -> "Thanh toán một phần";
+            default -> "Đã thanh toán đủ";
+        };
     }
 
     private void reselectProduct(Integer productId) {
@@ -270,6 +386,16 @@ public class SalesController {
         }
     }
 
+    private double parsePaidAmount(double totalAmount) {
+        String paidText = txtPaidAmount.getText();
+
+        if (paidText == null || paidText.trim().isEmpty()) {
+            return totalAmount;
+        }
+
+        return MoneyInputUtils.parseMoney(paidText, "Số tiền khách trả");
+    }
+
     private int getQuantityAlreadyInCart(Integer productId) {
         for (CartRow item : cartItems) {
             if (item.getProductId() == productId) {
@@ -288,14 +414,59 @@ public class SalesController {
         return null;
     }
 
-    private void updateTotalAmount() {
+    private double calculateCartTotal() {
         double total = 0.0;
 
         for (CartRow item : cartItems) {
             total += item.getLineTotal();
         }
 
+        return total;
+    }
+
+    private void updateTotalAmount() {
+        double total = calculateCartTotal();
         lblTotalAmount.setText(CurrencyUtils.formatVnd(total));
+        updatePaymentSummary();
+    }
+
+    private void updatePaymentSummary() {
+        double totalAmount = calculateCartTotal();
+
+        if (totalAmount <= EPSILON) {
+            lblRemainingAmount.setText("0 VNĐ");
+            lblPaymentStatus.setText("Chưa có đơn");
+            return;
+        }
+
+        try {
+            double paidAmount = parsePaidAmount(totalAmount);
+
+            if (paidAmount > totalAmount + EPSILON) {
+                lblRemainingAmount.setText("0 VNĐ");
+                lblPaymentStatus.setText("Khách trả vượt tổng tiền");
+                return;
+            }
+
+            double remainingAmount = Math.max(0, totalAmount - paidAmount);
+            lblRemainingAmount.setText(CurrencyUtils.formatVnd(remainingAmount));
+
+            if (remainingAmount <= EPSILON) {
+                lblPaymentStatus.setText("Đã thanh toán đủ");
+            } else if (paidAmount <= EPSILON) {
+                lblPaymentStatus.setText(cbCustomer.getValue() == null
+                        ? "Nợ toàn bộ (chưa chọn KH)"
+                        : "Nợ toàn bộ");
+            } else {
+                lblPaymentStatus.setText(cbCustomer.getValue() == null
+                        ? "Thanh toán một phần (chưa chọn KH)"
+                        : "Thanh toán một phần");
+            }
+
+        } catch (Exception e) {
+            lblRemainingAmount.setText("0 VNĐ");
+            lblPaymentStatus.setText("Số tiền khách trả không hợp lệ");
+        }
     }
 
     private void clearSelectedProductInfo() {

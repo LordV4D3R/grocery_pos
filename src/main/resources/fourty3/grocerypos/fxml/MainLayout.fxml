@@ -26,6 +26,7 @@
             <Button text="Bán hàng" onAction="#showSalesView" maxWidth="Infinity"/>
             <Button text="Sản phẩm" onAction="#showProductView" maxWidth="Infinity"/>
             <Button text="Kho" onAction="#showInventoryView" maxWidth="Infinity"/>
+            <Button text="Khách hàng" onAction="#showCustomerView" maxWidth="Infinity" />
             <Button text="Báo cáo" onAction="#showReportView" maxWidth="Infinity"/>
         </VBox>
     </left>

@@ -10,9 +10,20 @@ import java.util.List;
 public class SaleOrderRepository {
 
     public void checkout(List<CartRow> cartItems) {
+        double totalAmount = calculateTotalAmount(cartItems);
+        checkout(cartItems, null, totalAmount, "PAID");
+    }
+
+    public void checkout(List<CartRow> cartItems, Integer customerId, double paidAmount, String paymentStatus) {
         String insertOrderSql = """
-                INSERT INTO sale_orders(created_at, total_amount)
-                VALUES (?, ?)
+                INSERT INTO sale_orders(
+                    created_at,
+                    customer_id,
+                    total_amount,
+                    paid_amount,
+                    payment_status
+                )
+                VALUES (?, ?, ?, ?, ?)
                 """;
 
         String insertOrderItemSql = """
@@ -38,7 +49,7 @@ public class SaleOrderRepository {
             connection.setAutoCommit(false);
 
             try {
-                int orderId = insertOrder(connection, insertOrderSql, cartItems);
+                int orderId = insertOrder(connection, insertOrderSql, cartItems, customerId, paidAmount, paymentStatus);
 
                 for (CartRow item : cartItems) {
                     decreaseStock(connection, updateStockSql, item);
@@ -65,13 +76,28 @@ public class SaleOrderRepository {
         }
     }
 
-    private int insertOrder(Connection connection, String sql, List<CartRow> cartItems) throws SQLException {
+    private int insertOrder(Connection connection,
+                            String sql,
+                            List<CartRow> cartItems,
+                            Integer customerId,
+                            double paidAmount,
+                            String paymentStatus) throws SQLException {
+
         double totalAmount = calculateTotalAmount(cartItems);
         String createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, createdAt);
-            statement.setDouble(2, totalAmount);
+
+            if (customerId == null) {
+                statement.setNull(2, Types.INTEGER);
+            } else {
+                statement.setInt(2, customerId);
+            }
+
+            statement.setDouble(3, totalAmount);
+            statement.setDouble(4, paidAmount);
+            statement.setString(5, paymentStatus);
             statement.executeUpdate();
 
             try (ResultSet rs = statement.getGeneratedKeys()) {

@@ -10,16 +10,18 @@ public class SalesService {
     private final SaleOrderRepository saleOrderRepository = new SaleOrderRepository();
 
     public void checkout(List<CartRow> cartItems) {
+        saleOrderRepository.checkout(cartItems);
+    }
+
+    public void checkout(List<CartRow> cartItems, Integer customerId, double paidAmount, String paymentStatus) {
         if (cartItems == null || cartItems.isEmpty()) {
             throw new IllegalArgumentException("Chưa có sản phẩm trong đơn.");
         }
 
-        for (CartRow item : cartItems) {
-            if (item.getQuantity() <= 0) {
-                throw new IllegalArgumentException("Số lượng sản phẩm không hợp lệ.");
-            }
+        if (paidAmount < 0) {
+            throw new IllegalArgumentException("Số tiền khách trả không hợp lệ.");
         }
 
-        saleOrderRepository.checkout(cartItems);
+        saleOrderRepository.checkout(cartItems, customerId, paidAmount, paymentStatus);
     }
 }

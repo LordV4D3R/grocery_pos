@@ -19,15 +19,13 @@
 
     <left>
         <VBox spacing="10" styleClass="side-menu">
-            <padding>
-                <Insets top="15" right="15" bottom="15" left="15"/>
-            </padding>
-
-            <Button text="Bán hàng" onAction="#showSalesView" maxWidth="Infinity"/>
-            <Button text="Sản phẩm" onAction="#showProductView" maxWidth="Infinity"/>
-            <Button text="Kho" onAction="#showInventoryView" maxWidth="Infinity"/>
-            <Button text="Khách hàng" onAction="#showCustomerView" maxWidth="Infinity" />
-            <Button text="Báo cáo" onAction="#showReportView" maxWidth="Infinity"/>
+            <Button text="Bán hàng" onAction="#showSalesView" maxWidth="Infinity" styleClass="menu-button"/>
+            <Button text="Sản phẩm" onAction="#showProductView" maxWidth="Infinity" styleClass="menu-button"/>
+            <Button text="Kho / Nhập hàng" onAction="#showInventoryView" maxWidth="Infinity" styleClass="menu-button"/>
+            <Button text="Khách hàng" onAction="#showCustomerView" maxWidth="Infinity" styleClass="menu-button"/>
+            <Button text="Thu nợ" onAction="#showDebtView" maxWidth="Infinity" styleClass="menu-button"/>
+            <Button text="Lịch sử nợ" onAction="#showDebtHistoryView" maxWidth="Infinity" styleClass="menu-button"/>
+            <Button text="Báo cáo" onAction="#showReportView" maxWidth="Infinity" styleClass="menu-button"/>
         </VBox>
     </left>
 

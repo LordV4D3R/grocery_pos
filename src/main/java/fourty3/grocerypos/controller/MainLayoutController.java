@@ -35,6 +35,16 @@ public class MainLayoutController {
     }
 
     @FXML
+    private void showDebtView() {
+        rootPane.setCenter(SceneManager.loadView("/fourty3/grocerypos/fxml/DebtView.fxml"));
+    }
+
+    @FXML
+    private void showDebtHistoryView() {
+        rootPane.setCenter(SceneManager.loadView("/fourty3/grocerypos/fxml/DebtHistoryView.fxml"));
+    }
+
+    @FXML
     private void showReportView() {
         rootPane.setCenter(SceneManager.loadView("/fourty3/grocerypos/fxml/ReportView.fxml"));
     }

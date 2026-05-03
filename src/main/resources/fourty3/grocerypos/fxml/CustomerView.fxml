@@ -13,17 +13,18 @@
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="fourty3.grocerypos.controller.CustomerController">
+            fx:controller="fourty3.grocerypos.controller.CustomerController"
+            styleClass="content-root">
 
     <top>
-        <VBox spacing="10">
-            <padding>
-                <Insets top="15" right="15" bottom="15" left="15"/>
-            </padding>
+        <VBox spacing="10" styleClass="panel">
+            <BorderPane.margin>
+                <Insets bottom="15"/>
+            </BorderPane.margin>
 
-            <Label text="Quản lý khách hàng" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+            <Label text="Quản lý khách hàng" styleClass="page-title" />
 
-            <HBox spacing="10">
+            <HBox spacing="10" alignment="CENTER_LEFT">
                 <Label text="Tìm kiếm:" />
                 <TextField fx:id="txtSearch"
                            promptText="Nhập tên, số điện thoại hoặc mã khách hàng..."
@@ -34,48 +35,57 @@
 
     <center>
         <HBox spacing="15">
-            <padding>
-                <Insets top="15" right="15" bottom="15" left="15"/>
-            </padding>
+            <VBox spacing="15" styleClass="panel" minWidth="300" prefWidth="350">
+                <Label text="Thông tin khách hàng" styleClass="section-title" />
 
-            <VBox spacing="10" prefWidth="350">
-                <Label text="Thông tin khách hàng" style="-fx-font-size: 14px; -fx-font-weight: bold;" />
+                <VBox spacing="5">
+                    <Label text="Tên khách hàng" />
+                    <TextField fx:id="txtName" promptText="Nhập tên khách hàng" />
+                </VBox>
 
-                <Label text="Tên khách hàng" />
-                <TextField fx:id="txtName" promptText="Nhập tên khách hàng" />
+                <VBox spacing="5">
+                    <Label text="Số điện thoại" />
+                    <TextField fx:id="txtPhone" promptText="Nhập số điện thoại" />
+                </VBox>
 
-                <Label text="Số điện thoại" />
-                <TextField fx:id="txtPhone" promptText="Nhập số điện thoại" />
+                <VBox spacing="5">
+                    <Label text="Địa chỉ" />
+                    <TextField fx:id="txtAddress" promptText="Nhập địa chỉ" />
+                </VBox>
 
-                <Label text="Địa chỉ" />
-                <TextField fx:id="txtAddress" promptText="Nhập địa chỉ" />
-
-                <Label text="Ghi chú" />
-                <TextArea fx:id="txtNote" promptText="Ghi chú thêm nếu có" prefRowCount="4" wrapText="true" />
+                <VBox spacing="5">
+                    <Label text="Ghi chú" />
+                    <TextArea fx:id="txtNote" promptText="Ghi chú thêm nếu có" prefRowCount="3" wrapText="true" />
+                </VBox>
 
                 <HBox spacing="10">
-                    <Button text="Thêm" onAction="#handleAddCustomer" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                    <Button text="Sửa" onAction="#handleUpdateCustomer" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                    <Button text="Thêm mới" onAction="#handleAddCustomer" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="primary-button"/>
+                    <Button text="Cập nhật" onAction="#handleUpdateCustomer" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
                 </HBox>
 
                 <HBox spacing="10">
-                    <Button text="Ngừng hoạt động" onAction="#handleDeactivateCustomer" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                    <Button text="Ngừng HĐ" onAction="#handleDeactivateCustomer" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="danger-button"/>
                     <Button text="Mở lại" onAction="#handleReactivateCustomer" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
                 </HBox>
 
-                <Button text="Làm mới" onAction="#handleRefresh" maxWidth="Infinity" />
+                <Button text="Làm mới Form" onAction="#handleRefresh" maxWidth="Infinity" />
             </VBox>
 
-            <TableView fx:id="customerTable" prefHeight="500" HBox.hgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="colRowNumber" text="Thứ tự" prefWidth="70" sortable="false"/>
-                    <TableColumn fx:id="colCustomerCode" text="Mã KH" prefWidth="90" sortable="false"/>
-                    <TableColumn fx:id="colName" text="Tên khách hàng" prefWidth="180"/>
-                    <TableColumn fx:id="colPhone" text="Số điện thoại" prefWidth="120"/>
-                    <TableColumn fx:id="colAddress" text="Địa chỉ" prefWidth="180"/>
-                    <TableColumn fx:id="colStatus" text="Trạng thái" prefWidth="120"/>
-                </columns>
-            </TableView>
+            <VBox styleClass="panel" HBox.hgrow="ALWAYS">
+                <TableView fx:id="customerTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colRowNumber" text="STT" prefWidth="50" sortable="false" style="-fx-alignment: CENTER;"/>
+                        <TableColumn fx:id="colCustomerCode" text="Mã KH" prefWidth="100" style="-fx-alignment: CENTER;"/>
+                        <TableColumn fx:id="colName" text="Tên khách hàng" prefWidth="200" style="-fx-alignment: CENTER-LEFT;"/>
+                        <TableColumn fx:id="colPhone" text="Số điện thoại" prefWidth="120" style="-fx-alignment: CENTER;"/>
+                        <TableColumn fx:id="colAddress" text="Địa chỉ" prefWidth="200" style="-fx-alignment: CENTER-LEFT;"/>
+                        <TableColumn fx:id="colStatus" text="Trạng thái" prefWidth="120" style="-fx-alignment: CENTER;"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                </TableView>
+            </VBox>
         </HBox>
     </center>
 

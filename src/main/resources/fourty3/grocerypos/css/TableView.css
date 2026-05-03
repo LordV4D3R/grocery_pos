@@ -1,0 +1,42 @@
+/* --- BẢNG (TABLEVIEW) TÂN TIẾN CÓ KẺ CỘT --- */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #e9ecef;
+    -fx-border-radius: 8px;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 8px 8px 0 0;
+    -fx-padding: 0 0 5px 0;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 45px;
+    /* Thêm đường kẻ dọc màu xám nhạt ở bên phải của Header */
+    -fx-border-color: transparent #e9ecef transparent transparent;
+}
+
+.table-view .column-header .label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+    -fx-alignment: CENTER-LEFT; /* Ép tiêu đề căn trái để bạn dễ chỉnh alignment trong FXML */
+}
+
+.table-view .table-cell {
+    /* Cấu trúc viền: Top | Right | Bottom | Left */
+    /* Đổi viền Right từ transparent thành #e9ecef để tạo đường phân cột */
+    -fx-border-color: transparent #e9ecef #f1f3f5 transparent;
+    -fx-padding: 12px 10px;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #e7f1ff;
+    -fx-table-cell-border-color: transparent;
+}
+
+.table-view .table-row-cell:selected .text {
+    -fx-fill: #0d6efd;
+    -fx-font-weight: bold;
+}

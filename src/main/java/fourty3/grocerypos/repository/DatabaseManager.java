@@ -43,12 +43,14 @@ public class DatabaseManager {
                     is_active INTEGER NOT NULL DEFAULT 1
                 );
                 """;
+
         String createSaleOrdersTable = """
                 CREATE TABLE IF NOT EXISTS sale_orders (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     created_at TEXT NOT NULL,
                     customer_id INTEGER,
                     total_amount REAL NOT NULL,
+                    initial_paid_amount REAL,
                     paid_amount REAL,
                     payment_status TEXT
                 );
@@ -92,6 +94,19 @@ public class DatabaseManager {
                 );
                 """;
 
+        String createDebtPaymentsTable = """
+                CREATE TABLE IF NOT EXISTS debt_payments (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sale_order_id INTEGER NOT NULL,
+                    customer_id INTEGER NOT NULL,
+                    amount_paid REAL NOT NULL,
+                    paid_at TEXT NOT NULL,
+                    note TEXT,
+                    FOREIGN KEY (sale_order_id) REFERENCES sale_orders(id),
+                    FOREIGN KEY (customer_id) REFERENCES customers(id)
+                );
+                """;
+
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement()) {
 
@@ -100,6 +115,7 @@ public class DatabaseManager {
             statement.execute(createSaleOrderItemsTable);
             statement.execute(createStockImportsTable);
             statement.execute(createCustomersTable);
+            statement.execute(createDebtPaymentsTable);
 
             ensureProductActiveColumnExists(connection);
             ensureCustomerCodeColumnExists(connection);
@@ -112,8 +128,11 @@ public class DatabaseManager {
             ensureSaleOrderCustomerIdColumnExists(connection);
             ensureSaleOrderPaidAmountColumnExists(connection);
             backfillSaleOrderPaidAmount(connection);
+            ensureSaleOrderInitialPaidAmountColumnExists(connection);
+            backfillSaleOrderInitialPaidAmount(connection);
             ensureSaleOrderPaymentStatusColumnExists(connection);
             backfillSaleOrderPaymentStatus(connection);
+
         } catch (SQLException e) {
             throw new RuntimeException("Cannot initialize database", e);
         }
@@ -321,10 +340,10 @@ public class DatabaseManager {
 
     private static void backfillSaleOrderPaidAmount(Connection connection) {
         String sql = """
-            UPDATE sale_orders
-            SET paid_amount = total_amount
-            WHERE paid_amount IS NULL
-            """;
+                UPDATE sale_orders
+                SET paid_amount = total_amount
+                WHERE paid_amount IS NULL
+                """;
 
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(sql);
@@ -359,10 +378,10 @@ public class DatabaseManager {
 
     private static void backfillSaleOrderPaymentStatus(Connection connection) {
         String sql = """
-            UPDATE sale_orders
-            SET payment_status = 'PAID'
-            WHERE payment_status IS NULL OR trim(payment_status) = ''
-            """;
+                UPDATE sale_orders
+                SET payment_status = 'PAID'
+                WHERE payment_status IS NULL OR trim(payment_status) = ''
+                """;
 
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(sql);
@@ -370,4 +389,43 @@ public class DatabaseManager {
             throw new RuntimeException("Cannot backfill sale_orders.payment_status", e);
         }
     }
+
+    private static void ensureSaleOrderInitialPaidAmountColumnExists(Connection connection) {
+        String checkSql = "PRAGMA table_info(sale_orders)";
+        boolean hasInitialPaidAmountColumn = false;
+
+        try (Statement statement = connection.createStatement();
+             var rs = statement.executeQuery(checkSql)) {
+
+            while (rs.next()) {
+                String columnName = rs.getString("name");
+                if ("initial_paid_amount".equalsIgnoreCase(columnName)) {
+                    hasInitialPaidAmountColumn = true;
+                    break;
+                }
+            }
+
+            if (!hasInitialPaidAmountColumn) {
+                statement.execute("ALTER TABLE sale_orders ADD COLUMN initial_paid_amount REAL");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Cannot migrate sale_orders.initial_paid_amount column", e);
+        }
+    }
+
+    private static void backfillSaleOrderInitialPaidAmount(Connection connection) {
+        String sql = """
+                UPDATE sale_orders
+                SET initial_paid_amount = COALESCE(paid_amount, total_amount)
+                WHERE initial_paid_amount IS NULL
+                """;
+
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException("Cannot backfill sale_orders.initial_paid_amount", e);
+        }
+    }
+
 }

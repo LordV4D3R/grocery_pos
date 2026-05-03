@@ -33,6 +33,18 @@ public class ReportController {
     private Label lblTotalRevenue;
 
     @FXML
+    private Label lblCollectedAtSale;
+
+    @FXML
+    private Label lblDebtCollected;
+
+    @FXML
+    private Label lblActualCollected;
+
+    @FXML
+    private Label lblOutstandingDebt;
+
+    @FXML
     private Label lblTotalProfit;
 
     @FXML
@@ -97,12 +109,24 @@ public class ReportController {
         LocalDate fromDate = dpFromDate.getValue();
         LocalDate toDate = dpToDate.getValue();
 
+        if (fromDate == null || toDate == null) {
+            throw new IllegalArgumentException("Vui lòng chọn đầy đủ từ ngày và đến ngày.");
+        }
+
+        if (fromDate.isAfter(toDate)) {
+            throw new IllegalArgumentException("Từ ngày không được lớn hơn đến ngày.");
+        }
+
         DailyReportSummary summary = reportService.getSummaryByDateRange(fromDate, toDate);
         List<TopSellingProductReport> topProducts =
                 reportService.getTopSellingProductsByDateRange(fromDate, toDate);
 
         lblTotalOrders.setText(String.valueOf(summary.getTotalOrders()));
         lblTotalRevenue.setText(formatCurrency(summary.getTotalRevenue()));
+        lblCollectedAtSale.setText(formatCurrency(summary.getTotalCollectedAtSale()));
+        lblDebtCollected.setText(formatCurrency(summary.getTotalDebtCollected()));
+        lblActualCollected.setText(formatCurrency(summary.getTotalActualCollected()));
+        lblOutstandingDebt.setText(formatCurrency(summary.getTotalOutstandingDebt()));
         lblTotalProfit.setText(formatCurrency(summary.getTotalProfit()));
 
         reportItems.setAll(topProducts);
@@ -110,7 +134,7 @@ public class ReportController {
     }
 
     private String formatCurrency(double amount) {
-        return String.format("%,.0f VNĐ", amount);
+        return CurrencyUtils.formatVnd(amount);
     }
 
     private void showWarning(String message) {

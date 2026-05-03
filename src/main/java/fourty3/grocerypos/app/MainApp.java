@@ -18,15 +18,21 @@ public class MainApp extends Application {
         );
 
         BorderPane root = loader.load();
-        Scene scene = new Scene(root, 1200, 700);
+
+        Scene scene = new Scene(root, 1366, 768);
+
         scene.getStylesheets().add(
                 getClass().getResource("/fourty3/grocerypos/css/app.css").toExternalForm()
         );
 
-        primaryStage.setTitle("Store POS");
+        primaryStage.setTitle("Phần Mềm Quản Lý Bán Hàng");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(1000);
-        primaryStage.setMinHeight(650);
+
+        primaryStage.setMinWidth(1280);
+        primaryStage.setMinHeight(720);
+
+        primaryStage.setMaximized(true);
+
         primaryStage.show();
 
         System.out.println("Database path: " + DatabaseManager.getDatabasePath());

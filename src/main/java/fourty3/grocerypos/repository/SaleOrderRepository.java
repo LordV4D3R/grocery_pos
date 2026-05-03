@@ -20,10 +20,11 @@ public class SaleOrderRepository {
                     created_at,
                     customer_id,
                     total_amount,
+                    initial_paid_amount,
                     paid_amount,
                     payment_status
                 )
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
         String insertOrderItemSql = """
@@ -97,7 +98,8 @@ public class SaleOrderRepository {
 
             statement.setDouble(3, totalAmount);
             statement.setDouble(4, paidAmount);
-            statement.setString(5, paymentStatus);
+            statement.setDouble(5, paidAmount);
+            statement.setString(6, paymentStatus);
             statement.executeUpdate();
 
             try (ResultSet rs = statement.getGeneratedKeys()) {

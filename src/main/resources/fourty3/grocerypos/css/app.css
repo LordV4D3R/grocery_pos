@@ -1,58 +1,152 @@
-/* Đổi font chữ sang font hiện đại hơn */
+/* --- TỔNG THỂ --- */
 .root {
     -fx-font-family: "Segoe UI", "Open Sans", sans-serif;
-    -fx-background-color: #f8f9fa; /* Màu nền xám nhạt hiện đại */
+    -fx-background-color: #f8f9fa;
+    -fx-font-size: 14px;
 }
 
-/* Style cho các Panel (Khung chứa) */
+/* --- BỐ CỤC KHUNG (PANEL) --- */
+.content-root {
+    -fx-padding: 15;
+}
+
 .panel {
     -fx-background-color: #ffffff;
-    -fx-background-radius: 8px; /* Bo góc mượt mà */
-    -fx-border-color: transparent;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 3); /* Đổ bóng nhẹ */
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 3);
+    -fx-padding: 15;
 }
 
-/* Style cho Menu bên trái */
+/* --- SIDE MENU (MAIN LAYOUT) --- */
 .side-menu {
     -fx-background-color: #ffffff;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 2, 0);
+    -fx-padding: 15;
 }
 
-/* Style chung cho tất cả các Button */
+/* --- TIÊU ĐỀ --- */
+.app-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-padding: 15 15 0 15;
+    -fx-text-fill: #2c3e50;
+}
+
+.page-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2b2d42;
+}
+
+.section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4a4e69;
+}
+
+/* --- TEXTFIELD & COMBOBOX --- */
+.text-field, .text-area, .date-picker, .combo-box {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 6px;
+    -fx-border-color: #ced4da;
+    -fx-border-radius: 6px;
+    -fx-padding: 8px;
+}
+
+.text-field:focused, .text-area:focused, .date-picker:focused, .combo-box:focused {
+    -fx-border-color: #0d6efd;
+    -fx-background-color: #ffffff;
+}
+
+/* --- NÚT BẤM (BUTTONS) --- */
 .button {
     -fx-background-color: #f1f3f5;
     -fx-text-fill: #333333;
     -fx-border-radius: 6px;
     -fx-background-radius: 6px;
     -fx-padding: 8px 16px;
-    -fx-cursor: hand; /* Đổi trỏ chuột khi hover */
-}
-
-/* Hiệu ứng khi di chuột vào Button (Hover) */
-.button:hover {
-    -fx-background-color: #e9ecef;
-}
-
-/* Style riêng cho nút Thanh Toán (Primary Button) */
-.checkout-button {
-    -fx-background-color: #0d6efd; /* Màu xanh web chuẩn (Bootstrap) */
-    -fx-text-fill: white;
+    -fx-cursor: hand;
     -fx-font-weight: bold;
 }
+.button:hover {
+    -fx-background-color: #e2e6ea;
+}
 
-.checkout-button:hover {
+/* Nút chính (Ví dụ: Thanh toán, Nhập hàng) */
+.primary-button, .checkout-button {
+    -fx-background-color: #0d6efd;
+    -fx-text-fill: white;
+}
+.primary-button:hover, .checkout-button:hover {
     -fx-background-color: #0b5ed7;
 }
 
-/* Style cho TextField (Ô nhập liệu) */
-.text-field {
-    -fx-background-radius: 4px;
-    -fx-border-color: #ced4da;
-    -fx-border-radius: 4px;
-    -fx-padding: 6px;
+/* Nút cảnh báo (Ví dụ: Xóa, Ngừng hoạt động) */
+.danger-button {
+    -fx-background-color: #dc3545;
+    -fx-text-fill: white;
+}
+.danger-button:hover {
+    -fx-background-color: #bb2d3b;
 }
 
-.text-field:focused {
-    -fx-border-color: #86b7fe; /* Đổi màu viền khi click vào */
-    -fx-background-color: #ffffff;
+/* Menu Button bên trái */
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #495057;
+    -fx-alignment: center-left;
+    -fx-padding: 12px 15px;
+    -fx-font-size: 15px;
+    -fx-background-radius: 8px;
+}
+.menu-button:hover {
+    -fx-background-color: #e9ecef;
+    -fx-text-fill: #0d6efd;
+}
+
+/* --- BẢNG (TABLEVIEW) TÂN TIẾN --- */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #e9ecef;
+    -fx-border-radius: 8px;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 8px 8px 0 0;
+    -fx-padding: 0 0 5px 0;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 45px;
+    -fx-border-color: transparent #e9ecef transparent transparent;
+    -fx-border-width: 0 1px 0 0;
+}
+
+.table-view .column-header .label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+}
+
+.table-view .table-cell {
+    -fx-border-color: transparent #e9ecef #f1f3f5 transparent;
+    -fx-border-width: 0 1px 1px 0;
+    -fx-padding: 12px 10px;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #e7f1ff;
+    -fx-table-cell-border-color: transparent;
+}
+.table-view .table-row-cell:selected .text {
+    -fx-fill: #0d6efd;
+    -fx-font-weight: bold;
+}
+
+/* Label tổng tiền nổi bật */
+.total-amount {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #198754; /* Màu xanh lá */
 }
